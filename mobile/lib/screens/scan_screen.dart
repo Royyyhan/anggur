@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/deteksi_provider.dart';
 import '../models/deteksi_result_model.dart';
+import '../services/api_service.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -13,6 +14,7 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> {
+  static const double MIN_CONFIDENCE = 0.6;
   bool _isLoading = false;
   File? _selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
@@ -25,14 +27,13 @@ class _ScanScreenState extends State<ScanScreen> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            // Image Preview
             if (_selectedImage != null)
               Container(
                 width: double.infinity,
                 height: 250,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green, width: 2),
+                  border: Border.all(color: const Color(0xFF16A34A), width: 2),
                 ),
                 child: Image.file(
                   _selectedImage!,
@@ -44,18 +45,17 @@ class _ScanScreenState extends State<ScanScreen> {
                 width: double.infinity,
                 height: 250,
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: const Color(0xFF16A34A).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green, width: 2),
+                  border: Border.all(color: const Color(0xFF16A34A), width: 2),
                 ),
                 child: const Icon(
                   Icons.image_not_supported,
                   size: 80,
-                  color: Colors.green,
+                  color: Color(0xFF16A34A),
                 ),
               ),
             const SizedBox(height: 24),
-            // Title
             const Text(
               'Deteksi Penyakit Tanaman',
               style: TextStyle(
@@ -65,7 +65,6 @@ class _ScanScreenState extends State<ScanScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-            // Subtitle
             Text(
               _selectedImage != null
                   ? 'Foto tanaman sudah siap untuk dianalisis'
@@ -77,23 +76,22 @@ class _ScanScreenState extends State<ScanScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            // Button Scan dari Kamera
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _scanFromCamera,
-                icon: const Icon(Icons.camera),
+                icon: const Icon(Icons.camera_alt),
                 label: const Text('Ambil Foto Kamera'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: const Color(0xFF16A34A),
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            // Button Upload dari Galeri
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -101,10 +99,14 @@ class _ScanScreenState extends State<ScanScreen> {
                 onPressed: _isLoading ? null : _scanFromGallery,
                 icon: const Icon(Icons.image),
                 label: const Text('Pilih dari Galeri'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF16A34A),
+                  side: const BorderSide(color: Color(0xFF16A34A), width: 2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
             const SizedBox(height: 12),
-            // Button Simpan Hasil
             if (_selectedImage != null)
               SizedBox(
                 width: double.infinity,
@@ -117,21 +119,19 @@ class _ScanScreenState extends State<ScanScreen> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Icon(Icons.save),
-                  label: Text(_isLoading ? 'Menyimpan...' : 'Simpan Hasil'),
+                      : const Icon(Icons.check_circle),
+                  label: Text(_isLoading ? 'Menyimpan...' : 'Analisis Sekarang'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: const Color(0xFF0EA5E9),
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
-            if (_selectedImage != null)
-              const SizedBox(height: 12),
-            // Button Batal
+            if (_selectedImage != null) const SizedBox(height: 12),
             if (_selectedImage != null)
               SizedBox(
                 width: double.infinity,
@@ -142,31 +142,33 @@ class _ScanScreenState extends State<ScanScreen> {
                   label: const Text('Batal'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red, width: 2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
             if (_selectedImage == null) const SizedBox(height: 32),
             if (_selectedImage == null)
-              // Info Box
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: const Color(0xFF0EA5E9).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue, width: 1),
+                  border: Border.all(color: const Color(0xFF0EA5E9), width: 1.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.info, color: Colors.blue),
+                        Icon(Icons.lightbulb, color: Color(0xFF0EA5E9)),
                         SizedBox(width: 8),
                         Text(
                           'Tips untuk Hasil Terbaik',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue,
+                            color: Color(0xFF0EA5E9),
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -180,6 +182,32 @@ class _ScanScreenState extends State<ScanScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[700],
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info, size: 18, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Hasil hanya valid jika confidence ≥ ${(MIN_CONFIDENCE * 100).toStringAsFixed(0)}%',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -238,18 +266,50 @@ class _ScanScreenState extends State<ScanScreen> {
     });
 
     try {
-      // Simulasi analisis AI (dalam real app, akan memanggil backend API)
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await ApiService.predict(_selectedImage!).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => {
+          'statusCode': 504,
+          'data': {'message': 'Timeout: Server tidak merespons. Pastikan backend dan AI server running.'}
+        },
+      );
 
       if (!mounted) return;
+
+      if (result['statusCode'] != 200) {
+        final errorMsg = result['data']['message'] ?? 'Prediksi gagal';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $errorMsg'),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final prediction = result['data'];
+      final confidence = (prediction['confidence'] ?? 0.0).toDouble();
+
+      if (confidence < MIN_CONFIDENCE) {
+        if (!mounted) return;
+        _showInvalidDialog(context, confidence);
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final rekomendasi = _getRekomendasi(prediction['penyakit']);
 
       final deteksiResult = DeteksiResult(
         imagePath: _selectedImage!.path,
         namaGambar: _selectedImage!.path.split('/').last,
-        resultPenyakit: 'Penyakit Terdeteksi: Bercak Daun',
-        confidence: 0.87,
-        rekomendasi:
-            'Gunakan fungisida dan jaga kelembaban tanaman tetap stabil',
+        resultPenyakit: prediction['penyakit'] ?? 'Tidak diketahui',
+        confidence: confidence,
+        rekomendasi: rekomendasi,
         waktu: DateTime.now(),
       );
 
@@ -268,10 +328,21 @@ class _ScanScreenState extends State<ScanScreen> {
       setState(() {
         _selectedImage = null;
       });
+    } on SocketException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Network Error: $e\nPastikan device terhubung ke jaringan yang sama dengan server.'),
+          duration: const Duration(seconds: 5),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('Error: $e'),
+          duration: const Duration(seconds: 5),
+        ),
       );
     } finally {
       if (mounted) {
@@ -279,6 +350,97 @@ class _ScanScreenState extends State<ScanScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  void _showInvalidDialog(BuildContext context, double confidence) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hasil Tidak Valid'),
+        icon: const Icon(Icons.error_outline, color: Colors.orange, size: 32),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gambar yang diupload kemungkinan bukan tanaman atau kualitasnya tidak cukup baik.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Confidence Score: ${(confidence * 100).toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Minimum required: ${(MIN_CONFIDENCE * 100).toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Pastikan:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '• Foto adalah tanaman anggur\n'
+              '• Gambar jelas dan tidak blur\n'
+              '• Pencahayaan cukup baik\n'
+              '• Fokus pada area yang menunjukkan gejala',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Coba Lagi'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _selectedImage = null;
+              });
+            },
+            child: const Text('Batal', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getRekomendasi(String penyakit) {
+    switch (penyakit.toLowerCase()) {
+      case 'black measles':
+        return 'Cabut dan bakar daun yang terinfeksi. Gunakan fungisida sulfur atau tembaga.';
+      case 'black rot':
+        return 'Potong bagian yang membusuk. Berikan fungisida sistemik dan jaga ventilasi.';
+      case 'healthy':
+        return 'Tanaman sehat! Lanjutkan perawatan rutin dan monitoring teratur.';
+      case 'isariopsis leaf spot':
+        return 'Singkirkan daun yang terkena. Aplikasikan fungisida dan jaga kelembaban optimal.';
+      default:
+        return 'Konsultasi dengan ahli pertanian untuk penanganan lebih lanjut.';
     }
   }
 
