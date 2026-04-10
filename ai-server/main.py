@@ -19,10 +19,10 @@ FILTER_THRESHOLD = 0.7  # Minimum confidence untuk dianggap daun anggur
 disease_model = keras.models.load_model("model/model_anggur_final.keras")
 
 class_names = [
-    "Black Measles",
     "Black Rot",
-    "Healthy",
-    "Isariopsis Leaf Spot"
+    "Black Measles",
+    "Isariopsis Leaf Spot",
+    "Healthy"
 ]
 
 # ==================== HELPER ====================
