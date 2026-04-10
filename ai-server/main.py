@@ -1,6 +1,4 @@
 from fastapi import FastAPI, UploadFile, File
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras import layers, models
 from tensorflow import keras
 from PIL import Image
 import numpy as np
@@ -16,23 +14,9 @@ FILTER_CLASS_NAMES = ["bukan_daun_anggur", "daun_anggur"]
 FILTER_THRESHOLD = 0.7  # Minimum confidence untuk dianggap daun anggur
 
 # ==================== MODEL DETEKSI PENYAKIT ====================
-base_model = MobileNetV2(
-    input_shape=(224, 224, 3),
-    include_top=False,
-    weights="imagenet"
-)
-
-base_model.trainable = False
-
-disease_model = models.Sequential([
-    base_model,
-    layers.GlobalAveragePooling2D(),
-    layers.Dense(128, activation="relu"),
-    layers.Dropout(0.3),
-    layers.Dense(4, activation="softmax")
-])
-
-disease_model.load_weights("model/model.weights.h5")
+# Model CNN (MobileNetV2-based) dilatih dengan 55k dataset
+# Input: 224x224x3, Output: 4 kelas penyakit
+disease_model = keras.models.load_model("model/model_anggur_final.keras")
 
 class_names = [
     "Black Measles",
